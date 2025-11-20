@@ -40,6 +40,14 @@ CLaserOdometry2DNode::CLaserOdometry2DNode(): Node("CLaserOdometry2DNode")
   this->declare_parameter<double>("freq", 10.0);
   this->get_parameter("freq", freq);
 
+  this->declare_parameter<bool>("print_results", true);
+  this->get_parameter("print_results", print_results);
+  rf2o_ref.print_results = print_results;
+
+
+  this->declare_parameter<bool>("usb_latest_time", false);
+  this->get_parameter("usb_latest_time", usb_latest_time);
+
   // Init Publishers and Subscribers
   //---------------------------------
   buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
@@ -48,7 +56,7 @@ CLaserOdometry2DNode::CLaserOdometry2DNode(): Node("CLaserOdometry2DNode")
   odom_pub  = this->create_publisher<nav_msgs::msg::Odometry>(odom_topic, 5);
   laser_sub = this->create_subscription<sensor_msgs::msg::LaserScan>(laser_scan_topic,rclcpp::QoS(rclcpp::KeepLast(1)).best_effort().durability_volatile(),
       std::bind(&CLaserOdometry2DNode::LaserCallBack, this, std::placeholders::_1));
-  
+
   // Initialize pose
   if (init_pose_from_topic != "")
   {
@@ -86,7 +94,7 @@ void CLaserOdometry2DNode::LaserCallBack(const sensor_msgs::msg::LaserScan::Shar
     // Keep in memory the last received laser_scan
     last_scan = *new_scan;
     rf2o_ref.current_scan_time = last_scan.header.stamp;
-    
+
     if (rf2o_ref.first_laser_scan == false)
     {
       // copy laser range data to rf2o internal variable
@@ -106,13 +114,13 @@ void CLaserOdometry2DNode::LaserCallBack(const sensor_msgs::msg::LaserScan::Shar
 }
 
 
-/** 
+/**
    * Gets the laser pose with respect the base_link (through TF)
    * This allow estimation of the odometry with respect to the robot base reference system.
    */
 bool CLaserOdometry2DNode::setLaserPoseFromTf()
-{  
-  bool retrieved = false;  
+{
+  bool retrieved = false;
   geometry_msgs::msg::TransformStamped tf_laser;
 
   try
@@ -143,7 +151,7 @@ bool CLaserOdometry2DNode::setLaserPoseFromTf()
   laser_tf.translation()(1) = t[1];
   laser_tf.translation()(2) = t[2];
 
-  // Sets this transform in rf2o 
+  // Sets this transform in rf2o
   rf2o_ref.setLaserPose(laser_tf);
 
   return retrieved;
@@ -161,7 +169,7 @@ bool CLaserOdometry2DNode::scan_available()
 */
 void CLaserOdometry2DNode::process()
 {
-  // Do only run when a new scan is ready 
+  // Do only run when a new scan is ready
   if( rf2o_ref.is_initialized() && scan_available() )
   {
     // Process odometry estimation
@@ -208,7 +216,7 @@ void CLaserOdometry2DNode::publish()
   tf2::Quaternion tf_quaternion;
   tf_quaternion.setRPY(0.0, 0.0, rf2o::getYaw(rf2o_ref.robot_pose_.rotation()));
   geometry_msgs::msg::Quaternion quaternion = tf2::toMsg(tf_quaternion);
-  
+
   // compose odom msg
   nav_msgs::msg::Odometry odom;
   odom.header.stamp = rf2o_ref.last_odom_time;    // the time of the last scan used!
@@ -258,7 +266,7 @@ int main(int argc, char** argv)
   rclcpp::Rate rate(myLaserOdomNode->freq);
 
   // Loop
-  while (rclcpp::ok()){ 
+  while (rclcpp::ok()){
       rclcpp::spin_some(myLaserOdomNode);
       myLaserOdomNode->process();
       rate.sleep();

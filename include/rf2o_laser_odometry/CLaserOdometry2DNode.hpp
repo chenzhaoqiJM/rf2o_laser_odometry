@@ -24,6 +24,8 @@ public:
   CLaserOdometry2D    rf2o_ref;
   bool                publish_tf, new_scan_available;
   double              freq;
+  bool print_results;
+  bool usb_latest_time;
   std::string         laser_scan_topic;
   std::string         odom_topic;
   std::string         base_frame_id;
@@ -33,7 +35,7 @@ public:
   sensor_msgs::msg::LaserScan                     last_scan;
   bool                                            GT_pose_initialized;
   std::shared_ptr<tf2_ros::Buffer>                buffer_;
-  std::shared_ptr<tf2_ros::TransformListener>     tf_listener_;  
+  std::shared_ptr<tf2_ros::TransformListener>     tf_listener_;
   std::unique_ptr<tf2_ros::TransformBroadcaster>  odom_broadcaster;
   nav_msgs::msg::Odometry                         initial_robot_pose;
 

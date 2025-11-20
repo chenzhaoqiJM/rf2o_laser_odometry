@@ -94,6 +94,9 @@ public:
   bool verbose, module_initialized, first_laser_scan;
   rclcpp::Time last_odom_time, current_scan_time;
 
+  // ros2 parameter
+  bool print_results;
+
   // Internal Data
   std::vector<Eigen::MatrixXf> range;
   std::vector<Eigen::MatrixXf> range_old;
