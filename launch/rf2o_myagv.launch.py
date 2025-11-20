@@ -30,7 +30,7 @@ def generate_launch_description():
                     'init_pose_from_topic' : '',
                     'freq' : 20.0,
                     'print_results': False,
-                    'usb_latest_time': True
+                    'usb_latest_time': False
                     },
 
                     ],
